@@ -4,17 +4,19 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.thomas.PremiereApi.Exception.StudentNotFoundException;
 import com.thomas.PremiereApi.model.Student;
 import com.thomas.PremiereApi.repository.StudentRepository;
 
 
-public class ServiceStudent  extends Student{
+@Service //indique à Spring que cette classe aura des composants metiers
+public class ServiceStudent {
 	private StudentRepository studentRepository;
 	
 	
-	@Autowired
+	@Autowired //Va injecter la classe StudentRepository et creer une instance de celle ci
 	public ServiceStudent(StudentRepository studentRepository) {
 		this.studentRepository = studentRepository;
 	}
@@ -28,7 +30,7 @@ public class ServiceStudent  extends Student{
 		return this.studentRepository.findAll();
 	}
 	
-	public Optional<Student> getOneStudent(long id){
+	public Optional<Student> getOneStudent(long id){ //Optional qd renvoi qqchose qui peut ne pas exister - oblige à gerer l'exception
 		Optional<Student>student=this.studentRepository.findById(id);
 		if(!student.isPresent()) {
 			throw new StudentNotFoundException (String.format("Student with id %s not found" , id));
@@ -41,7 +43,13 @@ public class ServiceStudent  extends Student{
 		if(!studentExist.isPresent()) {
 			throw new StudentNotFoundException (String.format("Student with id %s not found", id));
 		}
-		return this.studentRepository.save(student);
+		Student existingStudent = studentExist.get();
+	    
+	    existingStudent.setNom(student.getNom());
+	    existingStudent.setPrenom(student.getPrenom());
+	    existingStudent.setEmail(student.getEmail());
+	    
+	    return this.studentRepository.save(existingStudent);
 	}
 	
 	public void removeStudent (long id) {
